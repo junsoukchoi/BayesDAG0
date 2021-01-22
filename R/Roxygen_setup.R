@@ -5,4 +5,4 @@
 #' @import igraph
 #' @import pscl
 #' @importFrom Rcpp evalCpp
-NULL 
+NULL
