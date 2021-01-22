@@ -1,12 +1,14 @@
 Package: BayesDAG0
 Type: Package
-Title: What the package does (short line)
+Title: Bayesian Differential Zero-Inflated Negative Binomial Directed Acyclic Graphs
 Version: 1.0
 Date: 2021-01-22
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
-Imports: Rcpp (>= 1.0.6)
+Author: Junsouk Choi and Yang Ni
+Maintainer: Junsouk Choi <jchoi@stat.tamu.edu>
+Description: Markov chain Monte Carlo (MCMC) implementation for differential zero-inflated negative binomial directed acyclic graphical models (DAG0). DAG0s model differential networks across two sample groups as well as zero-inflation in multivariate count data.
+License: GPL (>=2)
+Encoding: UTF-8
+LazyData: TRUE
+Imports: Rcpp (>= 1.0.6), foreach, doParallel, doRNG, igraph, pscl
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 7.1.1
