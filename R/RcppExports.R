@@ -2,18 +2,18 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 rcpparma_hello_world <- function() {
-    .Call(`_BayesDAG0_rcpparma_hello_world`)
+    .Call('_BayesDAG0_rcpparma_hello_world', PACKAGE = 'BayesDAG0')
 }
 
 rcpparma_outerproduct <- function(x) {
-    .Call(`_BayesDAG0_rcpparma_outerproduct`, x)
+    .Call('_BayesDAG0_rcpparma_outerproduct', PACKAGE = 'BayesDAG0', x)
 }
 
 rcpparma_innerproduct <- function(x) {
-    .Call(`_BayesDAG0_rcpparma_innerproduct`, x)
+    .Call('_BayesDAG0_rcpparma_innerproduct', PACKAGE = 'BayesDAG0', x)
 }
 
 rcpparma_bothproducts <- function(x) {
-    .Call(`_BayesDAG0_rcpparma_bothproducts`, x)
+    .Call('_BayesDAG0_rcpparma_bothproducts', PACKAGE = 'BayesDAG0', x)
 }
 
