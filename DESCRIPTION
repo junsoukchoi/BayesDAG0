@@ -9,6 +9,7 @@ Description: Markov chain Monte Carlo (MCMC) implementation for differential zer
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: TRUE
+Depends: foreach, doParallel, doRNG, igraph, pscl
 Imports: Rcpp (>= 1.0.6), foreach, doParallel, doRNG, igraph, pscl
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 7.1.1
