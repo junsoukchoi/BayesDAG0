@@ -1,0 +1,314 @@
+---
+title: "BayesDAG0: Bayesian Differential Zero-Inflated Negative Binomial Directed Acyclic Graphs"
+
+output: 
+  github_document:
+        toc: true
+        toc_depth: 4
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The R package `BayesDAG0` implements parallel-tempered Markov chain Monte Carlo (MCMC) samplers for Bayesian differential zero-inflated negative binomial DAG (DAG0) models. One-sample DAG0 deals with zero-inflated count data generated under a single experimental condition. This is extended to two-sample DAG0 which models not only zero-inflation in multivariate count data but also differential networks across two experimental groups.
+
+## Installation
+
+To install the R package `BayesDAG0`, use
+
+```{r install, tidy = 'formatR', eval = FALSE, echo = TRUE}
+install.packages(path_to_source, repos = NULL, type="source")
+```
+
+## Example for one-sample DAG0
+
+```{r example1, eval = FALSE, echo = TRUE}
+library(BayesDAG0)
+library(igraph)
+library(pscl)
+
+# set random seed
+set.seed(1)
+
+# generate a random DAG E
+p   = 10       # the number of variables 
+n_e = p        # the number of edges
+E_true = matrix(0, p, p)
+while (sum(E_true == 1) < n_e)
+{
+   id_edge = matrix(sample(1 : p, 2), ncol = 2)
+   E_true[id_edge] = 1
+   g_true = graph_from_adjacency_matrix(t(E_true))
+   if (!(is_dag(g_true)))
+      E_true[id_edge] = 0
+}
+
+# generate model parameters for one-sample DAG0
+alpha_true = matrix(0, p, p)
+alpha_true[E_true == 1] = runif(n_e, 0.3, 1)
+beta_true  = matrix(0, p, p)
+beta_true[E_true == 1]  = runif(n_e, -1, -0.3)
+delta_true = runif(p, -2, -1)
+gamma_true = runif(p, 1, 2)
+psi_true   = 1 / runif(p, 1, 5)
+
+# generate data from one-sample DAG0 with given DAG and model parameters
+dat = generate_data_DAG0(n = 100, E_true, alpha_true, beta_true, delta_true, gamma_true, psi_true)
+
+### conduct posterior inference for one-sample DAG0
+# starting values for MCMC 
+starting = list()
+starting$E     = matrix(0, p, p)
+starting$alpha = matrix(0, p, p)
+starting$beta  = matrix(0, p, p)
+starting$delta = rep(0, p)
+starting$gamma = rep(0, p)
+starting$psi   = rep(0, p)
+for (j in 1 : p)
+{
+   mle = zeroinfl(dat[ , j] ~ 1 | 1, dist = "negbin")
+   starting$delta[j] = mle$coefficients$zero
+   starting$gamma[j] = mle$coefficients$count
+   starting$psi[j]   = 1 / mle$theta
+}
+
+starting$tau = c(10, 10, 1, 1)
+starting$rho = 1 / p
+
+# sd's of the Metropolis sampler Normal proposal distribution
+tuning = list()
+tuning$E     = c(0.05, 0.05, 1.2, 0.3)
+tuning$E_rev = c(0.5, 0.5, 1.2, 0.3) 
+tuning$alpha = 1.2  
+tuning$beta  = 0.4  
+tuning$delta = 1.2  
+tuning$gamma = 0.3 
+tuning$psi   = 0.8  
+
+# hyperparameters for one-sample DAG0
+priors = list()
+priors$psi = c(1, 1)
+priors$tau = c(1, 1)
+priors$rho = c(1, 1)
+
+# run the parallel-tempered MCMC for one-sample DAG0
+out = mcmc_1sampleDAG0(dat, starting, tuning, priors, n_sample = 2000, n_burnin = 1000, do_par = TRUE)
+
+# report Metropolis sampling acceptance rates
+out$acceptance
+
+# graph estimate based on median probability model
+E_est  = (apply(out$samples$E, c(1, 2), mean) > 0.5) + 0
+
+# report contingency table for edge selection
+table(E_est, E_true)
+```
+
+## Example for two-sample DAG0
+
+```{r example2, eval = FALSE, echo = TRUE}
+library(BayesDAG0)
+library(igraph)
+library(pscl)
+
+# set random seed
+set.seed(1)
+
+# generate E_0, D, and E1
+p    = 10      # the number of variables
+n_e0 = 10      # the number of edges in the graph for the control group
+n_d  = 4       # the number of differences between two edge sets of both group
+E0_true = E1_true = D_true = matrix(0, p, p)
+while (sum(E0_true) < n_e0)
+{
+   id_A0 = matrix(sample(1 : p, 2), ncol = 2)
+   E0_true[id_A0] = 1
+   G0_true = graph_from_adjacency_matrix(t(E0_true))
+   if (!(is_dag(G0_true)))
+      E0_true[id_A0] = 0
+}
+
+E0_eq_1 = which(E0_true == 1, arr.ind = TRUE)
+E0_eq_0 = which(E0_true != 1, arr.ind = TRUE)
+while (sum(D_true) < n_d)
+{
+   # consider addition of an edge to E_0 or deletion of an edge from E_0 with equal probabilities
+   if (runif(1) > 0.5)           
+      id_D = matrix(E0_eq_1[sample(nrow(E0_eq_1), 1), ], ncol = 2)
+   else
+      id_D = matrix(E0_eq_0[sample(nrow(E0_eq_0), 1), ], ncol = 2)
+   D_true[id_D] = 1
+   E1_true = E0_true * (1 - D_true) + (1 - E0_true) * D_true 
+   G1_true = graph_from_adjacency_matrix(t(E1_true))
+   if (!(is_dag(G1_true)))
+      D_true[id_D] = 0
+}
+
+E1_true = E0_true * (1 - D_true) + (1 - E0_true) * D_true 
+
+# generate U, zeta, and eta
+n_u = 2     # the number of shared edges having different strengths across groups
+U_true = matrix(NA, p, p)
+U_true[E0_true == 1 & E1_true == 1] = 0
+shared = which(E0_true == 1 & E1_true == 1, arr.ind = TRUE)
+while (sum(U_true, na.rm = TRUE) < n_u)
+{
+   id_U = matrix(shared[sample(nrow(shared), 1), ], ncol = 2)
+   U_true[id_U] = 1
+}
+
+zeta_true = eta_true = matrix(NA, p, p)
+zeta_true[E0_true == 1 & E1_true == 1] = 0
+eta_true[E0_true == 1 & E1_true == 1]  = 0
+zeta_true[U_true == 1 & !is.na(U_true)] = runif(sum(U_true, na.rm = TRUE), 0.7, 1)
+eta_true[U_true == 1 & !is.na(U_true)]  = runif(sum(U_true, na.rm = TRUE), -1, -0.7)
+
+# generate model parameters for two-sample DAG0
+alpha0_true = alpha1_true = matrix(0, p, p)
+beta0_true  = beta1_true  = matrix(0, p, p)
+alpha0_true[E0_true == 1] = runif(sum(E0_true), 0.3, 1)
+beta0_true[E0_true == 1]  = runif(sum(E0_true), -1, -0.3)
+alpha1_true[E0_true == 0 & E1_true == 1] = runif(sum((1 - E0_true) * E1_true), 0.3, 1)
+beta1_true[E0_true == 0 & E1_true == 1]  = runif(sum((1 - E0_true) * E1_true), -1, -0.3)
+alpha1_true[E0_true == 1 & E1_true == 1] = alpha0_true[E0_true == 1 & E1_true == 1] + zeta_true[E0_true == 1 & E1_true == 1]
+beta1_true[E0_true == 1 & E1_true == 1]  = beta0_true[E0_true == 1 & E1_true == 1] + eta_true[E0_true == 1 & E1_true == 1]
+delta0_true = runif(p, -2, -1)
+delta1_true = runif(p, -2, -1)
+gamma0_true = runif(p, 1, 2)
+gamma1_true = runif(p, 1, 2)
+psi0_true   = 1 / runif(p, 1, 5)
+psi1_true   = 1 / runif(p, 1, 5)
+
+# generate data from two-sample DAG0 (dat0: control group, dat1: case/treatment group)
+dat0 = generate_data_DAG0(n = 100, E0_true, alpha0_true, beta0_true, delta0_true, gamma0_true, psi0_true)
+dat1 = generate_data_DAG0(n = 100, E1_true, alpha1_true, beta1_true, delta1_true, gamma1_true, psi1_true)
+
+### apply one-sample DAG0 to each group to get starting values for MCMC for two-sample DAG0
+### this technique saves a lot of iterations for convergence of our MCMC sampler for two-sample DAG0
+# starting values for the control group
+starting0 = list()
+starting0$E     = matrix(0, p, p)
+starting0$alpha = matrix(0, p, p)
+starting0$beta  = matrix(0, p, p)
+starting0$delta = rep(0, p)
+starting0$gamma = rep(0, p)
+starting0$psi   = rep(0, p)
+for (j in 1 : p)
+{
+   mle0 = zeroinfl(dat0[ , j] ~ 1 | 1, dist = "negbin")
+   starting0$delta[j] = mle0$coefficients$zero
+   starting0$gamma[j] = mle0$coefficients$count
+   starting0$psi[j]   = 1 / mle0$theta
+}
+
+starting0$tau = c(10, 10, 1, 1)
+starting0$rho = 1 / p
+
+# starting values for the case/treatment group
+starting1 = list()
+starting1$E     = matrix(0, p, p)
+starting1$alpha = matrix(0, p, p)
+starting1$beta  = matrix(0, p, p)
+starting1$delta = rep(0, p)
+starting1$gamma = rep(0, p)
+starting1$psi   = rep(0, p)
+for (j in 1 : p)
+{
+   mle1 = zeroinfl(dat1[ , j] ~ 1 | 1, dist = "negbin")
+   starting1$delta[j] = mle1$coefficients$zero
+   starting1$gamma[j] = mle1$coefficients$count
+   starting1$psi[j]   = 1 / mle1$theta
+}
+
+starting1$tau = c(10, 10, 1, 1)
+starting1$rho = 1 / p
+
+# sd's of the Metropolis sampler Normal proposal distribution for MCMC for one-sample DAG0
+tuning = list()
+tuning$E     = c(0.05, 0.05, 1.2, 0.3)
+tuning$E_rev = c(0.5, 0.5, 1.2, 0.3) 
+tuning$alpha = 1.2  
+tuning$beta  = 0.4  
+tuning$delta = 1.2  
+tuning$gamma = 0.3 
+tuning$psi   = 1.0  
+
+# hyperparameters for one-sample DAG0
+priors = list()
+priors$psi = c(1, 1)
+priors$tau = c(1, 1)
+priors$rho = c(1, 1)
+
+# apply one-sample DAG0 approach to each group
+out0 = mcmc_1sampleDAG0(dat0, starting0, tuning, priors, n_sample = 500, n_burnin = 499, do_par = TRUE)
+out1 = mcmc_1sampleDAG0(dat1, starting1, tuning, priors, n_sample = 500, n_burnin = 499, do_par = TRUE)
+
+### conduct posterior inference for two-sample DAG0
+# set starting values at the last iteration of MCMC for one-sample DAG0
+starting = list()
+starting$E0     = out0$samples$E
+starting$E1     = out1$samples$E
+starting$D      = abs(starting$E1 - starting$E0)
+starting$alpha0 = out0$samples$alpha
+starting$alpha1 = out1$samples$alpha
+starting$beta0  = out0$samples$beta
+starting$beta1  = out1$samples$beta
+starting$delta0 = out0$samples$delta
+starting$delta1 = out1$samples$delta
+starting$gamma0 = out0$samples$gamma
+starting$gamma1 = out1$samples$gamma
+starting$psi0   = out0$samples$psi
+starting$psi1   = out1$samples$psi
+starting$U      = matrix(NA, p, p)
+starting$U[starting$E0 == 1 & starting$E1 == 1] = 1
+starting$zeta   = (starting$alpha1 - starting$alpha0) * starting$U
+starting$eta    = (starting$beta1 - starting$beta0) * starting$U
+starting$tau    = c(1, 1, 1, 1, 1, 1)
+starting$rho    = c(0.5, 0.5, 0.5)
+
+# sd's of the Metropolis sampler Normal proposal distribution for MCMC for two-sample DAG0
+tuning = list()
+tuning$E      = c(0.05, 0.05, 1.2, 0.3, 0.05, 0.05)
+tuning$E_rev  = c(0.5, 0.5, 1.2, 0.3, 0.5, 0.5)
+tuning$U      = c(0.05, 0.05)
+tuning$zeta   = 1.6  
+tuning$eta    = 0.8  
+tuning$alpha0 = 1.2  
+tuning$alpha1 = 1.2  
+tuning$beta0  = 0.4 
+tuning$beta1  = 0.4 
+tuning$delta0 = 1.2  
+tuning$delta1 = 1.2  
+tuning$gamma0 = 0.3 
+tuning$gamma1 = 0.3 
+tuning$psi0   = 1.0  
+tuning$psi1   = 1.0  
+
+# hyperparameters for two-sample DAG0
+priors = list()
+priors$psi = c(1, 1)
+priors$tau = c(1, 1)
+priors$rho = c(1, 1)
+
+# run the parallel-tempered MCMC for two-sample DAG0
+out = mcmc_2sampleDAG0(dat0, dat1, starting, tuning, priors, do_par = TRUE)
+
+# report Metropolis sampling acceptance rates
+out$acceptance
+
+# estimate graph structure for each group based on median probability model
+E0_est  = (apply(out$samples$E0, c(1, 2), mean) > 0.5) + 0
+E1_est  = (apply(out$samples$E1, c(1, 2), mean) > 0.5) + 0
+
+# estimate differential edge strengths based on median probability model
+U_est  = (apply(out$samples$U, c(1, 2), function(z) mean(z, na.rm = TRUE)) > 0.5) + 0
+
+# report contingency table for edge selection for each group
+table(E0_est, E0_true)
+table(E1_est, E1_true)
+
+# report contingency table for estimation of differential edge strengths 
+table(U_est, U_true)
+
+```
