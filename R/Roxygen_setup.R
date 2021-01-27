@@ -1,8 +1,8 @@
 #' @useDynLib BayesDAG0
+#' @import igraph
 #' @import foreach
 #' @import doParallel
+#' @import parallel
 #' @import doRNG
-#' @import igraph
-#' @import pscl
 #' @importFrom Rcpp evalCpp
 NULL
