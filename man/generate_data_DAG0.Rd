@@ -28,5 +28,34 @@ a matrix containing data generated from one-sample DAG0 with given DAG and model
 Generate data from one-sample DAG0 with given DAG and model parameters
 }
 \examples{
-To be written.
+library(BayesDAG0)
+library(igraph)
+
+# set random seed
+set.seed(1)
+
+# generate a random DAG E
+p   = 10       # the number of variables 
+n_e = p        # the number of edges
+E_true = matrix(0, p, p)
+while (sum(E_true == 1) < n_e)
+{
+   id_edge = matrix(sample(1 : p, 2), ncol = 2)
+   E_true[id_edge] = 1
+   g_true = graph_from_adjacency_matrix(t(E_true))
+   if (!(is_dag(g_true)))
+      E_true[id_edge] = 0
+}
+
+# generate model parameters for one-sample DAG0
+alpha_true = matrix(0, p, p)
+alpha_true[E_true == 1] = runif(n_e, 0.3, 1)
+beta_true  = matrix(0, p, p)
+beta_true[E_true == 1]  = runif(n_e, -1, -0.3)
+delta_true = runif(p, -2, -1)
+gamma_true = runif(p, 1, 2)
+psi_true   = 1 / runif(p, 1, 5)
+
+# generate data from one-sample DAG0 with given DAG and model parameters
+dat = generate_data_DAG0(n = 100, E_true, alpha_true, beta_true, delta_true, gamma_true, psi_true)
 }

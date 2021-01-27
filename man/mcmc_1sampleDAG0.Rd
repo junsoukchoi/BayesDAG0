@@ -65,5 +65,83 @@ The value portion of the tag 'acceptance' shows the Metropolis sampling acceptan
 Implementation of the parallel-tempered MCMC for one-sample DAG0
 }
 \examples{
-To be written.
+library(BayesDAG0)
+library(igraph)
+library(pscl)
+
+# set random seed
+set.seed(1)
+
+# generate a random DAG E
+p   = 10       # the number of variables 
+n_e = p        # the number of edges
+E_true = matrix(0, p, p)
+while (sum(E_true == 1) < n_e)
+{
+   id_edge = matrix(sample(1 : p, 2), ncol = 2)
+   E_true[id_edge] = 1
+   g_true = graph_from_adjacency_matrix(t(E_true))
+   if (!(is_dag(g_true)))
+      E_true[id_edge] = 0
+}
+
+# generate model parameters for one-sample DAG0
+alpha_true = matrix(0, p, p)
+alpha_true[E_true == 1] = runif(n_e, 0.3, 1)
+beta_true  = matrix(0, p, p)
+beta_true[E_true == 1]  = runif(n_e, -1, -0.3)
+delta_true = runif(p, -2, -1)
+gamma_true = runif(p, 1, 2)
+psi_true   = 1 / runif(p, 1, 5)
+
+# generate data from one-sample DAG0 with given DAG and model parameters
+dat = generate_data_DAG0(n = 100, E_true, alpha_true, beta_true, delta_true, gamma_true, psi_true)
+
+### conduct posterior inference for one-sample DAG0
+# starting values for MCMC 
+starting = list()
+starting$E     = matrix(0, p, p)
+starting$alpha = matrix(0, p, p)
+starting$beta  = matrix(0, p, p)
+starting$delta = rep(0, p)
+starting$gamma = rep(0, p)
+starting$psi   = rep(0, p)
+for (j in 1 : p)
+{
+   mle = zeroinfl(dat[ , j] ~ 1 | 1, dist = "negbin")
+   starting$delta[j] = mle$coefficients$zero
+   starting$gamma[j] = mle$coefficients$count
+   starting$psi[j]   = 1 / mle$theta
+}
+
+starting$tau = c(10, 10, 1, 1)
+starting$rho = 1 / p
+
+# sd's of the Metropolis sampler Normal proposal distribution
+tuning = list()
+tuning$E     = c(0.05, 0.05, 1.2, 0.3)
+tuning$E_rev = c(0.5, 0.5, 1.2, 0.3) 
+tuning$alpha = 1.2  
+tuning$beta  = 0.4  
+tuning$delta = 1.2  
+tuning$gamma = 0.3 
+tuning$psi   = 0.8  
+
+# hyperparameters for one-sample DAG0
+priors = list()
+priors$psi = c(1, 1)
+priors$tau = c(1, 1)
+priors$rho = c(1, 1)
+
+# run the parallel-tempered MCMC for one-sample DAG0
+out = mcmc_1sampleDAG0(dat, starting, tuning, priors, n_sample = 2000, n_burnin = 1000, do_par = TRUE)
+
+# report Metropolis sampling acceptance rates
+out$acceptance
+
+# graph estimate based on median probability model
+E_est  = (apply(out$samples$E, c(1, 2), mean) > 0.5) + 0
+
+# report contingency table for edge selection
+table(E_est, E_true)
 }
