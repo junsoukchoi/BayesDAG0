@@ -310,5 +310,4 @@ table(E1_est, E1_true)
 
 # report contingency table for estimation of differential edge strengths 
 table(U_est, U_true)
-
 ```
