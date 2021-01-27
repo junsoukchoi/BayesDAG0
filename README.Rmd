@@ -18,7 +18,7 @@ The R package `BayesDAG0` implements parallel-tempered Markov chain Monte Carlo 
 To install the R package `BayesDAG0`, use
 
 ```{r install, tidy = 'formatR', eval = FALSE, echo = TRUE}
-install.packages(path_to_source, repos = NULL, type="source")
+install.packages(path_to_source, repos = NULL, type = "source")
 ```
 
 ## Example for one-sample DAG0
