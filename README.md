@@ -1,5 +1,6 @@
 BayesDAG0: Bayesian Differential Zero-Inflated Negative Binomial
-Directed Acyclic Graphs
+Directed Acyclic Graphs for Two-Sample Causal Discovery for
+Observational Zero-Inflated Count Data
 ================
 
 The R package `BayesDAG0` implements parallel-tempered Markov chain

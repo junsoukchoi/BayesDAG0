@@ -1,5 +1,5 @@
 ---
-title: "BayesDAG0: Bayesian Differential Zero-Inflated Negative Binomial Directed Acyclic Graphs"
+title: "BayesDAG0: Bayesian Differential Zero-Inflated Negative Binomial Directed Acyclic Graphs for Two-Sample Causal Discovery for Observational Zero-Inflated Count Data"
 
 output: 
   github_document:
