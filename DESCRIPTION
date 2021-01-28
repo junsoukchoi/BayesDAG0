@@ -5,7 +5,7 @@ Version: 1.0
 Date: 2021-01-22
 Author: Junsouk Choi and Yang Ni
 Maintainer: Junsouk Choi <jchoi@stat.tamu.edu>
-Description: Markov chain Monte Carlo (MCMC) implementation for differential zero-inflated negative binomial directed acyclic graphical models (DAG0). DAG0 helps identify differential networks across two sample groups as well as deals with zero-inflation in multivariate count data.
+Description: Markov chain Monte Carlo (MCMC) implementation for Bayesian differential zero-inflated negative binomial DAG (DAG0). DAG0 aims to two-sample causal discovery for observational zero-inflated count data. DAG0 helps identify differential networks across two sample groups as well as deals with zero-inflation in observational count data.
 License: GPL (>=2)
 Encoding: UTF-8
 Imports: Rcpp (>= 1.0.6), igraph, foreach, doParallel, parallel, doRNG
