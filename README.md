@@ -1,5 +1,6 @@
 BayesDAG0: Bayesian Differential Zero-Inflated Negative Binomial
-Directed Acyclic Graphs
+Directed Acyclic Graphs for Two-Sample Causal Discovery for
+Observational Zero-Inflated Count Data
 ================
 
 The R package `BayesDAG0` implements parallel-tempered Markov chain
@@ -20,7 +21,7 @@ library(devtools)
 devtools::install_github("junsoukchoi/BayesDAG0")
 ```
 
-## Example for one-sample DAG0
+## Example for One-Sample DAG0
 
 ``` r
 library(BayesDAG0)
@@ -104,7 +105,7 @@ E_est  = (apply(out$samples$E, c(1, 2), mean) > 0.5) + 0
 table(E_est, E_true)
 ```
 
-## Example for two-sample DAG0
+## Example for Two-Sample DAG0
 
 ``` r
 library(BayesDAG0)
