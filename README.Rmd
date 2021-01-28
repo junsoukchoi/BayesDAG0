@@ -11,14 +11,15 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-The R package `BayesDAG0` implements parallel-tempered Markov chain Monte Carlo (MCMC) samplers for Bayesian differential zero-inflated negative binomial DAG (DAG0) models. One-sample DAG0 deals with zero-inflated count data generated under a single experimental condition. This is extended to two-sample DAG0 which models not only zero-inflation in multivariate count data but also differential networks across two experimental groups.
+The R package `BayesDAG0` implements parallel-tempered Markov chain Monte Carlo (MCMC) samplers targeted to Bayesian differential zero-inflated negative binomial DAGs (DAG0s) for two-sample causal discovery for observational zero-inflated count data. One-sample DAG0 deals with multivariate zero-inflated count data generated under a single experimental condition. This is extended to two-sample DAG0 which models not only zero-inflation in observational count data but also differential networks across two experimental groups.
 
 ## Installation
 
-To install the R package `BayesDAG0`, use
+To install the latest version from Github, use, use
 
 ```{r install, tidy = 'formatR', eval = FALSE, echo = TRUE}
-install.packages(path_to_source, repos = NULL, type = "source")
+library(devtools)
+devtools::install_github("junsoukchoi/BayesDAG0")
 ```
 
 ## Example for one-sample DAG0
