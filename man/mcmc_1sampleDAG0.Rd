@@ -134,6 +134,8 @@ priors$tau = c(1, 1)
 priors$rho = c(1, 1)
 
 # run the parallel-tempered MCMC for one-sample DAG0
+# the parallel computation (do_par = TRUE) is only available on Unix-alike platforms 
+# Windows users should use do_par = FALSE not to allow the parallel computation
 out = mcmc_1sampleDAG0(dat, starting, tuning, priors, n_sample = 2000, n_burnin = 1000, do_par = TRUE)
 
 # report Metropolis sampling acceptance rates

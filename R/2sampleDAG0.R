@@ -164,6 +164,8 @@
 #' priors$rho = c(1, 1)
 #' 
 #' # apply one-sample DAG0 approach to each group
+#' # the parallel computation (do_par = TRUE) is only available on Unix-alike platforms
+#' # Windows users should use do_par = FALSE not to allow the parallel computation
 #' out0 = mcmc_1sampleDAG0(dat0, starting0, tuning, priors, n_sample = 500, n_burnin = 499, do_par = TRUE)
 #' out1 = mcmc_1sampleDAG0(dat1, starting1, tuning, priors, n_sample = 500, n_burnin = 499, do_par = TRUE)
 #' 
@@ -215,6 +217,8 @@
 #' priors$rho = c(1, 1)
 #' 
 #' # run the parallel-tempered MCMC for two-sample DAG0
+#' # the parallel computation (do_par = TRUE) is only available on Unix-alike platforms
+#' # Windows users should use do_par = FALSE not to allow the parallel computation
 #' out = mcmc_2sampleDAG0(dat0, dat1, starting, tuning, priors, do_par = TRUE)
 #' 
 #' # report Metropolis sampling acceptance rates
