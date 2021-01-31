@@ -246,6 +246,10 @@ mcmc_2sampleDAG0 = function(data0, data1, starting, tuning, priors, n_sample = 5
    n1 = nrow(data1)
    p  = ncol(data0)
    
+   # if n_chain = 1, do not consider the swapping step 
+   if (n_chain == 1)
+      prob_swap = 0
+   
    # default temperatures for the parallel tempering 
    if (is.null(temperature))
       temperature = exp(seq(0, log(1.5), length.out = n_chain))
