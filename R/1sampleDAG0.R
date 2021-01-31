@@ -45,6 +45,7 @@
 generate_data_DAG0 = function(n, E, alpha, beta, delta, gamma, psi)
 {
    # generate data from one-sample DAG0
+   p   = ncol(E)
    dat = matrix(0, n, p)
    G   = graph_from_adjacency_matrix(t(E))
    order_nodes = as_ids(topo_sort(G))
