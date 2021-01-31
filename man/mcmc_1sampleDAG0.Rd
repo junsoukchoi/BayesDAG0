@@ -100,13 +100,13 @@ dat = generate_data_DAG0(n = 100, E_true, alpha_true, beta_true, delta_true, gam
 ### conduct posterior inference for one-sample DAG0
 # starting values for MCMC 
 starting = list()
-starting$E     = matrix(0, p, p)
-starting$alpha = matrix(0, p, p)
-starting$beta  = matrix(0, p, p)
-starting$delta = rep(0, p)
-starting$gamma = rep(0, p)
-starting$psi   = rep(0, p)
-for (j in 1 : p)
+starting$E     = matrix(0, ncol(dat), ncol(dat))
+starting$alpha = matrix(0, ncol(dat), ncol(dat))
+starting$beta  = matrix(0, ncol(dat), ncol(dat))
+starting$delta = rep(0, ncol(dat))
+starting$gamma = rep(0, ncol(dat))
+starting$psi   = rep(0, ncol(dat))
+for (j in 1 : ncol(dat))
 {
    mle = zeroinfl(dat[ , j] ~ 1 | 1, dist = "negbin")
    starting$delta[j] = mle$coefficients$zero
@@ -114,8 +114,8 @@ for (j in 1 : p)
    starting$psi[j]   = 1 / mle$theta
 }
 
-starting$tau = c(10, 10, 1, 1)
-starting$rho = 1 / p
+starting$tau = c(1, 1, 1, 1)
+starting$rho = 0.5
 
 # sd's of the Metropolis sampler Normal proposal distribution
 tuning = list()

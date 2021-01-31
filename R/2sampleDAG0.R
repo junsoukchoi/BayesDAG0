@@ -111,41 +111,41 @@
 #' ### this technique saves a lot of iterations for convergence of our MCMC sampler for two-sample DAG0
 #' # starting values for the control group
 #' starting0 = list()
-#' starting0$E     = matrix(0, p, p)
-#' starting0$alpha = matrix(0, p, p)
-#' starting0$beta  = matrix(0, p, p)
-#' starting0$delta = rep(0, p)
-#' starting0$gamma = rep(0, p)
-#' starting0$psi   = rep(0, p)
-#' for (j in 1 : p)
+#' starting0$E     = matrix(0, ncol(dat0), ncol(dat0))
+#' starting0$alpha = matrix(0, ncol(dat0), ncol(dat0))
+#' starting0$beta  = matrix(0, ncol(dat0), ncol(dat0))
+#' starting0$delta = rep(0, ncol(dat0))
+#' starting0$gamma = rep(0, ncol(dat0))
+#' starting0$psi   = rep(0, ncol(dat0))
+#' for (j in 1 : ncol(dat0))
 #' {
 #'    mle0 = zeroinfl(dat0[ , j] ~ 1 | 1, dist = "negbin")
 #'    starting0$delta[j] = mle0$coefficients$zero
 #'    starting0$gamma[j] = mle0$coefficients$count
 #'    starting0$psi[j]   = 1 / mle0$theta
 #' }
-#' 
-#' starting0$tau = c(10, 10, 1, 1)
-#' starting0$rho = 1 / p
-#' 
+#'
+#' starting0$tau = c(1, 1, 1, 1)
+#' starting0$rho = 0.5
+#'
 #' # starting values for the case/treatment group
 #' starting1 = list()
-#' starting1$E     = matrix(0, p, p)
-#' starting1$alpha = matrix(0, p, p)
-#' starting1$beta  = matrix(0, p, p)
-#' starting1$delta = rep(0, p)
-#' starting1$gamma = rep(0, p)
-#' starting1$psi   = rep(0, p)
-#' for (j in 1 : p)
+#' starting1$E     = matrix(0, ncol(dat1), ncol(dat1))
+#' starting1$alpha = matrix(0, ncol(dat1), ncol(dat1))
+#' starting1$beta  = matrix(0, ncol(dat1), ncol(dat1))
+#' starting1$delta = rep(0, ncol(dat1))
+#' starting1$gamma = rep(0, ncol(dat1))
+#' starting1$psi   = rep(0, ncol(dat1))
+#' for (j in 1 : ncol(dat1))
 #' {
 #'    mle1 = zeroinfl(dat1[ , j] ~ 1 | 1, dist = "negbin")
 #'    starting1$delta[j] = mle1$coefficients$zero
 #'    starting1$gamma[j] = mle1$coefficients$count
 #'    starting1$psi[j]   = 1 / mle1$theta
 #' }
-#' 
-#' starting1$tau = c(10, 10, 1, 1)
-#' starting1$rho = 1 / p
+#'
+#' starting1$tau = c(1, 1, 1, 1)
+#' starting1$rho = 0.5
 #' 
 #' # sd's of the Metropolis sampler Normal proposal distribution for MCMC for one-sample DAG0
 #' tuning = list()
@@ -185,7 +185,7 @@
 #' starting$gamma1 = out1$samples$gamma
 #' starting$psi0   = out0$samples$psi
 #' starting$psi1   = out1$samples$psi
-#' starting$U      = matrix(NA, p, p)
+#' starting$U      = matrix(NA, ncol(dat0), ncol(dat0))
 #' starting$U[starting$E0 == 1 & starting$E1 == 1] = 1
 #' starting$zeta   = (starting$alpha1 - starting$alpha0) * starting$U
 #' starting$eta    = (starting$beta1 - starting$beta0) * starting$U

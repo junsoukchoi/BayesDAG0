@@ -34,7 +34,7 @@ set.seed(1)
 
 # generate a random DAG E
 p   = 10       # the number of variables 
-n_e = p        # the number of edges
+n_e = 10       # the number of edges
 E_true = matrix(0, p, p)
 while (sum(E_true == 1) < n_e)
 {
@@ -60,13 +60,13 @@ dat = generate_data_DAG0(n = 100, E_true, alpha_true, beta_true, delta_true, gam
 ### conduct posterior inference for one-sample DAG0
 # starting values for MCMC 
 starting = list()
-starting$E     = matrix(0, p, p)
-starting$alpha = matrix(0, p, p)
-starting$beta  = matrix(0, p, p)
-starting$delta = rep(0, p)
-starting$gamma = rep(0, p)
-starting$psi   = rep(0, p)
-for (j in 1 : p)
+starting$E     = matrix(0, ncol(dat), ncol(dat))
+starting$alpha = matrix(0, ncol(dat), ncol(dat))
+starting$beta  = matrix(0, ncol(dat), ncol(dat))
+starting$delta = rep(0, ncol(dat))
+starting$gamma = rep(0, ncol(dat))
+starting$psi   = rep(0, ncol(dat))
+for (j in 1 : ncol(dat))
 {
    mle = zeroinfl(dat[ , j] ~ 1 | 1, dist = "negbin")
    starting$delta[j] = mle$coefficients$zero
@@ -74,8 +74,8 @@ for (j in 1 : p)
    starting$psi[j]   = 1 / mle$theta
 }
 
-starting$tau = c(10, 10, 1, 1)
-starting$rho = 1 / p
+starting$tau = c(1, 1, 1, 1)
+starting$rho = 0.5
 
 # sd's of the Metropolis sampler Normal proposal distribution
 tuning = list()
@@ -191,13 +191,13 @@ dat1 = generate_data_DAG0(n = 100, E1_true, alpha1_true, beta1_true, delta1_true
 ### this technique saves a lot of iterations for convergence of our MCMC sampler for two-sample DAG0
 # starting values for the control group
 starting0 = list()
-starting0$E     = matrix(0, p, p)
-starting0$alpha = matrix(0, p, p)
-starting0$beta  = matrix(0, p, p)
-starting0$delta = rep(0, p)
-starting0$gamma = rep(0, p)
-starting0$psi   = rep(0, p)
-for (j in 1 : p)
+starting0$E     = matrix(0, ncol(dat0), ncol(dat0))
+starting0$alpha = matrix(0, ncol(dat0), ncol(dat0))
+starting0$beta  = matrix(0, ncol(dat0), ncol(dat0))
+starting0$delta = rep(0, ncol(dat0))
+starting0$gamma = rep(0, ncol(dat0))
+starting0$psi   = rep(0, ncol(dat0))
+for (j in 1 : ncol(dat0))
 {
    mle0 = zeroinfl(dat0[ , j] ~ 1 | 1, dist = "negbin")
    starting0$delta[j] = mle0$coefficients$zero
@@ -205,18 +205,18 @@ for (j in 1 : p)
    starting0$psi[j]   = 1 / mle0$theta
 }
 
-starting0$tau = c(10, 10, 1, 1)
-starting0$rho = 1 / p
+starting0$tau = c(1, 1, 1, 1)
+starting0$rho = 0.5
 
 # starting values for the case/treatment group
 starting1 = list()
-starting1$E     = matrix(0, p, p)
-starting1$alpha = matrix(0, p, p)
-starting1$beta  = matrix(0, p, p)
-starting1$delta = rep(0, p)
-starting1$gamma = rep(0, p)
-starting1$psi   = rep(0, p)
-for (j in 1 : p)
+starting1$E     = matrix(0, ncol(dat1), ncol(dat1))
+starting1$alpha = matrix(0, ncol(dat1), ncol(dat1))
+starting1$beta  = matrix(0, ncol(dat1), ncol(dat1))
+starting1$delta = rep(0, ncol(dat1))
+starting1$gamma = rep(0, ncol(dat1))
+starting1$psi   = rep(0, ncol(dat1))
+for (j in 1 : ncol(dat1))
 {
    mle1 = zeroinfl(dat1[ , j] ~ 1 | 1, dist = "negbin")
    starting1$delta[j] = mle1$coefficients$zero
@@ -224,8 +224,8 @@ for (j in 1 : p)
    starting1$psi[j]   = 1 / mle1$theta
 }
 
-starting1$tau = c(10, 10, 1, 1)
-starting1$rho = 1 / p
+starting1$tau = c(1, 1, 1, 1)
+starting1$rho = 0.5
 
 # sd's of the Metropolis sampler Normal proposal distribution for MCMC for one-sample DAG0
 tuning = list()
@@ -265,7 +265,7 @@ starting$gamma0 = out0$samples$gamma
 starting$gamma1 = out1$samples$gamma
 starting$psi0   = out0$samples$psi
 starting$psi1   = out1$samples$psi
-starting$U      = matrix(NA, p, p)
+starting$U      = matrix(NA, ncol(dat0), ncol(dat0))
 starting$U[starting$E0 == 1 & starting$E1 == 1] = 1
 starting$zeta   = (starting$alpha1 - starting$alpha0) * starting$U
 starting$eta    = (starting$beta1 - starting$beta0) * starting$U
