@@ -35,6 +35,3 @@ The value portion of the tag 'acceptance' shows the acceptance indicators for ea
 \description{
 Implementation of Gibbs step for two-sample DAG0
 }
-\examples{
-
-}

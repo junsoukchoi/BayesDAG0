@@ -34,6 +34,3 @@ The value portion of the tag 'acceptance' shows the acceptance indicators for al
 \description{
 Implementation of Gibbs step for one-sample DAG0
 }
-\examples{
-
-}
